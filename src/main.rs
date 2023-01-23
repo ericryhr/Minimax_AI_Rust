@@ -1,14 +1,10 @@
-use std::{io, cmp::max};
+use std::{io, cmp::max, process::exit, env};
 use rand::Rng;
 
 const N: usize = 3;
+const DEPTH_SEARCH: i32 = 7;
 const POSINFINITY: i32 = 1000;
 const NEGINFINITY: i32 = -1000;
-//0 -> huma
-//1 -> IA
-//2 -> random
-const PLAYER0: i32 = 1;
-const PLAYERX: i32 = 2;
 
 struct Board {
     tiles: [i32; N*N],
@@ -97,22 +93,23 @@ fn eval_move(b: &mut Board, player: i32, depth: i32) -> i32 {
         b.tiles[i] = -1;
     }
 
-    return max_eval
+    return max_eval;
 }
 
-//Retorna el moviment que s'ha de fer
-//Falla si hi ha dos moviments guanyadors
+//Retorna el moviment que s'ha de fer. Falla si hi ha dos moviments guanyadors
 fn ai_move(b: &mut Board, player: i32) -> i32 {
-    let mut max_eval = NEGINFINITY;
+    let mut max_eval = i32::MIN;
     let mut max_pos = 0;
     for i in 0..N*N {
         if b.tiles[i] != -1 {continue;}
 
         b.tiles[i] = player;
-        let eval = -eval_move(b, other_player(player), 4);
-        if eval >= max_eval {
+        let eval = -eval_move(b, other_player(player), DEPTH_SEARCH);
+        let pos = i as i32;
+        //println!("POS: {}, EVAL: {}", pos, eval);
+        if eval > max_eval {
             max_eval = eval;
-            max_pos = i as i32;
+            max_pos = pos;
         }
         b.tiles[i] = -1;
     }
@@ -149,7 +146,24 @@ fn check_winner(b: &Board, player: i32) -> bool {
     return winner_diagonal_1||winner_diagonal_2;
 }
 
+fn usage() {
+    println!("./tictactoe_rust P0 PX");
+    println!("0 -> huma");
+    println!("1 -> IA");
+    println!("2 -> IA random");
+    exit(1);
+}
+
 fn main() {
+    let args: Vec<String> = env::args().collect();
+    if args.len() != 3 {usage();}
+    
+    let player_0: i32 = args[1].trim().parse::<i32>().expect("Jugador 0 no es un enter");
+    let player_x: i32 = args[2].trim().parse::<i32>().expect("Jugador X no es un enter");
+
+    if !(0..3).contains(&player_0) {usage();}
+    if !(0..3).contains(&player_x) {usage();}
+
     println!("COMENCEM!");
 
     let mut board = Board{
@@ -165,10 +179,10 @@ fn main() {
         let player_ai;
         if player == 0 {
             println!("JUGA 0");
-            player_ai = PLAYER0;
+            player_ai = player_0;
         } else {
             println!("JUGA X");
-            player_ai = PLAYERX;
+            player_ai = player_x;
         }
 
         let mut moviment;
@@ -187,9 +201,9 @@ fn main() {
             _ => {
                 moviment = rng.gen_range(0..9);
                 while board.tiles[moviment] != -1 {
-                    println!("CASELLA OCUPADA!");
                     moviment = rng.gen_range(0..9);
                 }
+                println!("LA IA MOU A {}", moviment);
             }
         }
         board.tiles[moviment] = player;
