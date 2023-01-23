@@ -96,7 +96,7 @@ fn eval_move(b: &mut Board, player: i32, depth: i32) -> i32 {
     return max_eval;
 }
 
-//Retorna el moviment que s'ha de fer. Falla si hi ha dos moviments guanyadors
+//Retorna el moviment que s'ha de fer
 fn ai_move(b: &mut Board, player: i32) -> i32 {
     let mut max_eval = i32::MIN;
     let mut max_pos = 0;
