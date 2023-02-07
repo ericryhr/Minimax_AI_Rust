@@ -1,5 +1,5 @@
-use std::{io, cmp::max, process::exit, env};
 use rand::Rng;
+use std::{cmp::max, env, io, process::exit};
 
 const N: usize = 3;
 const DEPTH_SEARCH: i32 = 7;
@@ -7,7 +7,7 @@ const POSINFINITY: i32 = 1000;
 const NEGINFINITY: i32 = -1000;
 
 struct Board {
-    tiles: [i32; N*N],
+    tiles: [i32; N * N],
 }
 
 fn print_board(b: &Board) {
@@ -17,24 +17,27 @@ fn print_board(b: &Board) {
         match b.tiles[i] {
             0 => print!(" 0 "),
             1 => print!(" X "),
-            _ => print!("   ")
+            _ => print!("   "),
         }
-        if i%3 == 2 {
-            print!("|\n");
+        if i % 3 == 2 {
+            println!("|");
         }
     }
     println!();
 }
 
 fn other_player(player: i32) -> i32 {
-    if player == 0 {return 1;}
-    else {return 0;}
+    if player == 0 {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 fn ask_move(bsize: i32) -> i32 {
     let mut fila = -1;
     let mut columna = -1;
-    
+
     while fila == -1 {
         println!("Digues fila [0, 1, 2]");
         let mut input = String::new();
@@ -42,7 +45,10 @@ fn ask_move(bsize: i32) -> i32 {
             Ok(_n) => {
                 fila = match input.trim().parse::<i32>() {
                     Ok(fila) => fila,
-                    Err(error) => {println!("No es un enter: {}", error); -1},
+                    Err(error) => {
+                        println!("No es un enter: {}", error);
+                        -1
+                    }
                 }
             }
             Err(error) => println!("Error de lectura: {}", error),
@@ -61,7 +67,10 @@ fn ask_move(bsize: i32) -> i32 {
             Ok(_n) => {
                 columna = match input.trim().parse::<i32>() {
                     Ok(columna) => columna,
-                    Err(error) => {println!("No es un enter: {}", error); -1},
+                    Err(error) => {
+                        println!("No es un enter: {}", error);
+                        -1
+                    }
                 }
             }
             Err(error) => println!("Error de lectura: {}", error),
@@ -73,22 +82,29 @@ fn ask_move(bsize: i32) -> i32 {
         }
     }
 
-    return fila*3 + columna;
+    return fila * 3 + columna;
 }
 
 //Retorna l'evaluacio del millor moviment
 fn eval_move(b: &mut Board, player: i32, depth: i32) -> i32 {
-    if check_winner(b, player) {return POSINFINITY;}
-    else if check_winner(b, other_player(player)) {return NEGINFINITY;}
-    else if check_draw(b) { return -10;}
-    else if depth <= 0 {return 0;}
-    
+    if check_winner(b, player) {
+        return POSINFINITY;
+    } else if check_winner(b, other_player(player)) {
+        return NEGINFINITY;
+    } else if check_draw(b) {
+        return -10;
+    } else if depth <= 0 {
+        return 0;
+    }
+
     let mut max_eval = NEGINFINITY;
-    for i in 0..N*N {
-        if b.tiles[i] != -1 {continue;}
+    for i in 0..N * N {
+        if b.tiles[i] != -1 {
+            continue;
+        }
 
         b.tiles[i] = player;
-        let eval = -eval_move(b, other_player(player), depth-1);
+        let eval = -eval_move(b, other_player(player), depth - 1);
         max_eval = max(max_eval, eval);
         b.tiles[i] = -1;
     }
@@ -100,8 +116,10 @@ fn eval_move(b: &mut Board, player: i32, depth: i32) -> i32 {
 fn ai_move(b: &mut Board, player: i32) -> i32 {
     let mut max_eval = i32::MIN;
     let mut max_pos = 0;
-    for i in 0..N*N {
-        if b.tiles[i] != -1 {continue;}
+    for i in 0..N * N {
+        if b.tiles[i] != -1 {
+            continue;
+        }
 
         b.tiles[i] = player;
         let eval = -eval_move(b, other_player(player), DEPTH_SEARCH);
@@ -117,8 +135,10 @@ fn ai_move(b: &mut Board, player: i32) -> i32 {
 }
 
 fn check_draw(b: &Board) -> bool {
-    for i in 0..N*N {
-        if b.tiles[i] == -1 { return false; }
+    for i in 0..N * N {
+        if b.tiles[i] == -1 {
+            return false;
+        }
     }
     return true;
 }
@@ -129,10 +149,16 @@ fn check_winner(b: &Board, player: i32) -> bool {
         let mut winner_rows = true;
         let mut winner_columns = true;
         for j in 0..N {
-            if b.tiles[3*i+j] != player {winner_rows = false;}
-            if b.tiles[3*j+i] != player {winner_columns = false;}
+            if b.tiles[3 * i + j] != player {
+                winner_rows = false;
+            }
+            if b.tiles[3 * j + i] != player {
+                winner_columns = false;
+            }
         }
-        if winner_rows||winner_columns {return true;}
+        if winner_rows || winner_columns {
+            return true;
+        }
     }
 
     //Check diagonals
@@ -140,10 +166,14 @@ fn check_winner(b: &Board, player: i32) -> bool {
     let mut winner_diagonal_2 = true;
 
     for i in 0..N {
-        if b.tiles[3*i+i] != player  {winner_diagonal_1 = false;}
-        if b.tiles[3*i+(N-i-1)] != player  {winner_diagonal_2 = false;}
+        if b.tiles[3 * i + i] != player {
+            winner_diagonal_1 = false;
+        }
+        if b.tiles[3 * i + (N - i - 1)] != player {
+            winner_diagonal_2 = false;
+        }
     }
-    return winner_diagonal_1||winner_diagonal_2;
+    return winner_diagonal_1 || winner_diagonal_2;
 }
 
 fn usage() {
@@ -156,18 +186,30 @@ fn usage() {
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    if args.len() != 3 {usage();}
-    
-    let player_0: i32 = args[1].trim().parse::<i32>().expect("Jugador 0 no es un enter");
-    let player_x: i32 = args[2].trim().parse::<i32>().expect("Jugador X no es un enter");
+    if args.len() != 3 {
+        usage();
+    }
 
-    if !(0..3).contains(&player_0) {usage();}
-    if !(0..3).contains(&player_x) {usage();}
+    let player_0: i32 = args[1]
+        .trim()
+        .parse::<i32>()
+        .expect("Jugador 0 no es un enter");
+    let player_x: i32 = args[2]
+        .trim()
+        .parse::<i32>()
+        .expect("Jugador X no es un enter");
+
+    if !(0..3).contains(&player_0) {
+        usage();
+    }
+    if !(0..3).contains(&player_x) {
+        usage();
+    }
 
     println!("COMENCEM!");
 
-    let mut board = Board{
-        tiles: [-1; (N*N)],
+    let mut board = Board {
+        tiles: [-1; (N * N)],
     };
     let mut player = 0;
     let mut game_end = false;
@@ -193,11 +235,11 @@ fn main() {
                     println!("CASELLA OCUPADA!");
                     moviment = ask_move(N as i32) as usize;
                 }
-            },
+            }
             1 => {
                 moviment = ai_move(&mut board, player) as usize;
                 println!("LA IA MOU A {}", moviment);
-            },
+            }
             _ => {
                 moviment = rng.gen_range(0..9);
                 while board.tiles[moviment] != -1 {
@@ -209,10 +251,17 @@ fn main() {
         board.tiles[moviment] = player;
 
         //Comprovem si s'ha acabat la partida
-        if player == 0 && check_winner(&board, 0) {game_end = true; println!("GUANYA 0!");}
-        else if player == 1 && check_winner(&board, 1) {game_end = true; println!("GUANYA X!");}
-        else if check_draw(&board) {game_end = true; println!("EMPAT!");}
-                
+        if player == 0 && check_winner(&board, 0) {
+            game_end = true;
+            println!("GUANYA 0!");
+        } else if player == 1 && check_winner(&board, 1) {
+            game_end = true;
+            println!("GUANYA X!");
+        } else if check_draw(&board) {
+            game_end = true;
+            println!("EMPAT!");
+        }
+
         player = other_player(player);
         print_board(&board);
     }
